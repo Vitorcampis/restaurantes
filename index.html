@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#9B2C2C">
+<meta name="description" content="Sabor & Arte - Restaurante. Pratos, porções e bebidas deliciosos. Peça online!">
+<title>Sabor & Arte - Restaurante</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon.png">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body { background: #FAF5EE; color: #333; padding-bottom: 90px; }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #9B2C2C, #6B1F1F);
+    color: #fff; text-align: center; padding: 28px 16px 60px;
+    position: relative;
+  }
+  header h1 { font-size: 2rem; letter-spacing: 1px; }
+  header p { opacity: .85; margin-top: 6px; font-size: .95rem; }
+  .badge {
+    display: inline-block; margin-top: 10px; background: rgba(255,255,255,.18);
+    padding: 5px 14px; border-radius: 20px; font-size: .8rem;
+  }
+
+  /* ===== CARRINHO FLUTUANTE ===== */
+  #cartBtn {
+    position: fixed; right: 18px; bottom: 18px; z-index: 50;
+    background: #9B2C2C; color: #fff; border: none; border-radius: 50px;
+    padding: 14px 22px; font-size: 1rem; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,.3); display: flex; align-items: center; gap: 8px;
+  }
+  #cartCount {
+    background: #fff; color: #9B2C2C; border-radius: 50%;
+    min-width: 24px; height: 24px; display: inline-flex; align-items: center;
+    justify-content: center; font-weight: bold; font-size: .85rem;
+  }
+
+  /* ===== CATEGORIAS ===== */
+  .tabs {
+    display: flex; gap: 10px; padding: 16px; margin-top: -40px;
+    position: sticky; top: 0; z-index: 20; background: #FAF5EE;
+    overflow-x: auto;
+  }
+  .tab {
+    flex: 1; min-width: 100px; border: none; padding: 12px; border-radius: 14px;
+    background: #fff; color: #6B1F1F; font-weight: bold; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08); font-size: .95rem;
+  }
+  .tab.active { background: #9B2C2C; color: #fff; }
+
+  /* ===== CATÁLOGO ===== */
+  main { padding: 8px 16px; }
+  .section-title { margin: 14px 0 4px; color: #6B1F1F; font-size: 1.15rem; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px;
+  }
+  .card {
+    background: #fff; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    display: flex; flex-direction: column;
+  }
+  .card .emoji {
+    font-size: 3.2rem; text-align: center; padding: 22px 0;
+    background: linear-gradient(135deg, #F5E6D3, #EDDCC0);
+  }
+  .card-body { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+  .card h3 { font-size: .95rem; color: #222; }
+  .card .desc { font-size: .78rem; color: #777; margin: 4px 0 8px; flex: 1; }
+  .card .price { font-weight: bold; color: #9B2C2C; font-size: 1rem; margin-bottom: 8px; }
+  .btn-add {
+    background: #9B2C2C; color: #fff; border: none; padding: 9px;
+    border-radius: 10px; cursor: pointer; font-weight: bold; font-size: .85rem;
+  }
+  .btn-add:active { transform: scale(.96); }
+
+  /* ===== CARRINHO (MODAL) ===== */
+  #cartModal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    z-index: 60; justify-content: center; align-items: flex-end;
+  }
+  #cartModal.open { display: flex; }
+  .cart-panel {
+    background: #FAF5EE; width: 100%; max-width: 480px; max-height: 80vh;
+    border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto;
+  }
+  .cart-panel h2 { color: #6B1F1F; margin-bottom: 12px; }
+  .cart-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fff; padding: 10px 12px; border-radius: 12px; margin-bottom: 8px;
+  }
+  .cart-item .qty { display: flex; align-items: center; gap: 10px; }
+  .cart-item .qty button {
+    width: 26px; height: 26px; border: none; border-radius: 8px;
+    background: #EDDCC0; color: #6B1F1F; font-weight: bold; cursor: pointer;
+  }
+  .cart-total {
+    display: flex; justify-content: space-between; font-weight: bold;
+    font-size: 1.1rem; margin: 14px 0; color: #6B1F1F;
+  }
+  .btn-checkout {
+    width: 100%; background: #2E7D32; color: #fff; border: none;
+    padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer;
+  }
+  .btn-close {
+    width: 100%; background: none; border: none; color: #999;
+    margin-top: 10px; cursor: pointer; padding: 8px;
+  }
+  .install-hint { text-align: center; font-size: .8rem; color: #999; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍽️ Sabor & Arte</h1>
+  <p>Restaurante • Comida caseira com carinho</p>
+  <span class="badge">📍 Rua das Flores, 123 • Aberto até 23h</span>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" onclick="showTab('pratos', this)">🍛 Pratos</button>
+  <button class="tab" onclick="showTab('porcoes', this)">🍟 Porções</button>
+  <button class="tab" onclick="showTab('bebidas', this)">🥤 Bebidas</button>
+</nav>
+
+<main>
+  <div id="pratos">
+    <h2 class="section-title">Pratos Principais</h2>
+    <div class="grid" id="grid-pratos"></div>
+  </div>
+
+  <div id="porcoes" style="display:none">
+    <h2 class="section-title">Porções</h2>
+    <div class="grid" id="grid-porcoes"></div>
+  </div>
+
+  <div id="bebidas" style="display:none">
+    <h2 class="section-title">Bebidas</h2>
+    <div class="grid" id="grid-bebidas"></div>
+  </div>
+</main>
+
+<button id="cartBtn" onclick="openCart()">🛒 Carrinho <span id="cartCount">0</span></button>
+
+<div id="cartModal">
+  <div class="cart-panel">
+    <h2>Seu Pedido</h2>
+    <div id="cartItems"></div>
+    <div class="cart-total"><span>Total</span><span id="cartTotal">R$ 0,00</span></div>
+    <button class="btn-checkout" onclick="checkout()">✅ Finalizar Pedido</button>
+    <button class="btn-close" onclick="closeCart()">Fechar</button>
+    <p class="install-hint">💡 Instale o app: menu do navegador → "Adicionar à tela inicial"</p>
+  </div>
+</div>
+
+<script>
+// ===== CATÁLOGO =====
+const catalogo = {
+  pratos: [
+    { id: 1, nome: "Feijoada Completa", desc: "Feijão preto, carnes, couve, farofa e laranja", preco: 32.90, emoji: "🍲" },
+    { id: 2, nome: "Frango Grelhado", desc: "Arroz, feijão, salada e legumes no vapor", preco: 24.90, emoji: "🍗" },
+    { id: 3, nome: "Strogonoff de Carne", desc: "Arroz branco, batata palha e salada", preco: 29.90, emoji: "🥘" },
+    { id: 4, nome: "Lasanha à Bolonhesa", desc: "Lasanha gratinada com molho e queijo", preco: 27.90, emoji: "🍝" },
+    { id: 5, nome: "Moqueca de Peixe", desc: "Peixe, leite de coco, pimentões e coentro", preco: 39.90, emoji: "🐟" },
+    { id: 6, nome: "Risoto de Camarão", desc: "Arroz cremoso com camarões e parmesão", preco: 34.90, emoji: "🍤" },
+  ],
+  porcoes: [
+    { id: 7, nome: "Batata Frita", desc: "Porção crocante com sal e orégano (500g)", preco: 18.90, emoji: "🍟" },
+    { id: 8, nome: "Isca de Frango", desc: "Frango empanado com molho especial (400g)", preco: 24.90, emoji: "🍗" },
+    { id: 9, nome: "Calabresa Acebolada", desc: "Calabresa grelhada com cebolas douradas", preco: 22.90, emoji: "🌭" },
+    { id: 10, nome: "Mandioca Frita", desc: "Mandioca dourada com manteiga de alho", preco: 16.90, emoji: "🥖" },
+    { id: 11, nome: "Pastel de Queijo (6un)", desc: "Pastéis crocantes recheados com queijo", preco: 19.90, emoji: "🥟" },
+    { id: 12, nome: "Provolone à Milanesa", desc: "Queijo provolone empanado e frito", preco: 26.90, emoji: "🧀" },
+  ],
+  bebidas: [
+    { id: 13, nome: "Refrigerante Lata", desc: "Coca-Cola, Guaraná ou Fanta 350ml", preco: 6.00, emoji: "🥤" },
+    { id: 14, nome: "Suco Natural", desc: "Laranja, maracujá ou abacaxi 500ml", preco: 9.90, emoji: "🧃" },
+    { id: 15, nome: "Água Mineral", desc: "Com ou sem gás 500ml", preco: 4.00, emoji: "💧" },
+    { id: 16, nome: "Cerveja Long Neck", desc: "Pilsen ou Puro Malte 330ml", preco: 9.90, emoji: "🍺" },
+    { id: 17, nome: "Milkshake", desc: "Chocolate, morango ou baunilha 400ml", preco: 14.90, emoji: "🥛" },
+    { id: 18, nome: "Café Expresso", desc: "Café passado na hora", preco: 5.00, emoji: "☕" },
+  ]
+};
+
+const cart = {};
+const brl = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+function renderCatalogo() {
+  for (const cat of ['pratos', 'porcoes', 'bebidas']) {
+    const grid = document.getElementById('grid-' + cat);
+    grid.innerHTML = catalogo[cat].map(item => `
+      <div class="card">
+        <div class="emoji">${item.emoji}</div>
+        <div class="card-body">
+          <h3>${item.nome}</h3>
+          <p class="desc">${item.desc}</p>
+          <p class="price">${brl(item.preco)}</p>
+          <button class="btn-add" onclick="addToCart(${item.id})">Adicionar</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function showTab(cat, btn) {
+  ['pratos', 'porcoes', 'bebidas'].forEach(c => {
+    document.getElementById(c).style.display = c === cat ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function findItem(id) {
+  return [...catalogo.pratos, ...catalogo.porcoes, ...catalogo.bebidas].find(i => i.id === id);
+}
+
+function addToCart(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  updateCart();
+}
+
+function changeQty(id, delta) {
+  cart[id] = (cart[id] || 0) + delta;
+  if (cart[id] <= 0) delete cart[id];
+  updateCart();
+  renderCartItems();
+}
+
+function updateCart() {
+  const count = Object.values(cart).reduce((a, b) => a + b, 0);
+  document.getElementById('cartCount').textContent = count;
+  const total = Object.entries(cart).reduce((sum, [id, q]) => sum + findItem(+id).preco * q, 0);
+  document.getElementById('cartTotal').textContent = brl(total);
+}
+
+function renderCartItems() {
+  const box = document.getElementById('cartItems');
+  const entries = Object.entries(cart);
+  if (!entries.length) {
+    box.innerHTML = '<p style="text-align:center;color:#999;padding:20px">Seu carrinho está vazio 🛒</p>';
+    return;
+  }
+  box.innerHTML = entries.map(([id, q]) => {
+    const item = findItem(+id);
+    return `
+      <div class="cart-item">
+        <span>${item.emoji} ${item.nome}</span>
+        <div class="qty">
+          <button onclick="changeQty(${id}, -1)">−</button>
+          <b>${q}</b>
+          <button onclick="changeQty(${id}, 1)">+</button>
+        </div>
+        <span style="min-width:80px;text-align:right">${brl(item.preco * q)}</span>
+      </div>`;
+  }).join('');
+}
+
+function openCart() {
+  renderCartItems();
+  document.getElementById('cartModal').classList.add('open');
+}
+function closeCart() {
+  document.getElementById('cartModal').classList.remove('open');
+}
+
+function checkout() {
+  if (!Object.keys(cart).length) { alert('Seu carrinho está vazio!'); return; }
+  const total = document.getElementById('cartTotal').textContent;
+  alert(`✅ Pedido confirmado!\nTotal: ${total}\n\nObrigado por pedir no Sabor & Arte! 😋`);
+  Object.keys(cart).forEach(k => delete cart[k]);
+  updateCart();
+  closeCart();
+}
+
+// ===== PWA: Service Worker =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+renderCatalogo();
+updateCart();
+</script>
+</body>
+</html>
